@@ -8,8 +8,8 @@ import { toast } from "sonner";
 type AuthContextType = {
   session: Session | null;
   user: User | null;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
+  signIn: (username: string, password: string) => Promise<void>;
+  signUp: (username: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   loading: boolean;
 };
@@ -42,10 +42,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (username: string, password: string) => {
     try {
       const { error } = await supabase.auth.signInWithPassword({
-        email,
+        email: `${username}@example.com`, // Convert username to email format
         password,
       });
       
@@ -58,15 +58,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (username: string, password: string) => {
     try {
       const { error } = await supabase.auth.signUp({
-        email,
+        email: `${username}@example.com`, // Convert username to email format
         password,
+        options: {
+          data: {
+            username,
+          }
+        }
       });
       
       if (error) throw error;
-      toast.success("Sign up successful! Please check your email for verification.");
+      toast.success("Sign up successful! You can now sign in.");
     } catch (error: any) {
       toast.error(error.message || "Error signing up");
       throw error;
