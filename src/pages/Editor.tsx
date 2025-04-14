@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Excalidraw, exportToBlob } from "@excalidraw/excalidraw";
@@ -177,9 +176,7 @@ const Editor = () => {
             }}
             initialData={{
               elements: excalidrawElements,
-              appState: appState || undefined,
-              // Initialize collaborators as an empty array to ensure proper type
-              collaborators: [],
+              appState: appState || undefined
             }}
             onChange={handleChange}
             viewModeEnabled={false}
