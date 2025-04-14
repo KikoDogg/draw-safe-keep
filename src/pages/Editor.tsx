@@ -21,6 +21,7 @@ const Editor = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [excalidrawElements, setExcalidrawElements] = useState<readonly ExcalidrawElement[]>([]);
   const [appState, setAppState] = useState<AppState | null>(null);
+  const [editorInitialized, setEditorInitialized] = useState(false);
   
   // For generating previews
   const excalidrawRef = useRef<any>(null);
@@ -28,6 +29,9 @@ const Editor = () => {
   // Autosave debouncing
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Use a ref to track if document has been fetched to avoid infinite loops
+  const documentFetchedRef = useRef(false);
+  
   // Add debugging to help identify the exact issue
   useEffect(() => {
     console.log("Excalidraw component loaded");
@@ -35,9 +39,10 @@ const Editor = () => {
 
   useEffect(() => {
     const fetchDocument = async () => {
-      if (!id) return;
+      if (!id || documentFetchedRef.current) return;
       
       try {
+        documentFetchedRef.current = true;
         const doc = await documentService.getDocumentById(id);
         if (doc) {
           setDocument(doc);
@@ -62,6 +67,13 @@ const Editor = () => {
 
     fetchDocument();
   }, [id, navigate]);
+
+  // Separate effect for initial editor initialization
+  useEffect(() => {
+    if (!isLoading && !editorInitialized) {
+      setEditorInitialized(true);
+    }
+  }, [isLoading, editorInitialized]);
 
   const generatePreview = async () => {
     if (!excalidrawRef.current || !excalidrawElements.length) return null;
@@ -93,11 +105,16 @@ const Editor = () => {
     
     setIsSaving(true);
     try {
-      // Update without the preview_image field that's causing issues
+      // Generate a preview image
+      const previewImage = await generatePreview();
+      
+      // Update with or without the preview_image field based on what's available
       await documentService.updateDocument(id, {
         title,
         content: { elements, appState },
+        ...(previewImage ? { preview_image: previewImage } : {})
       });
+      
       toast.success("Drawing saved successfully");
     } catch (error) {
       console.error("Error saving drawing:", error);
@@ -107,9 +124,10 @@ const Editor = () => {
     }
   };
 
-  const handleChange = (elements: readonly ExcalidrawElement[], appState: AppState) => {
+  // Store the onChange handler in a ref to prevent it from causing re-renders
+  const handleChangeRef = useRef((elements: readonly ExcalidrawElement[], state: AppState) => {
     setExcalidrawElements(elements);
-    setAppState(appState);
+    setAppState(state);
     
     // Autosave after changes (debounced)
     if (saveTimeoutRef.current) {
@@ -117,9 +135,9 @@ const Editor = () => {
     }
     
     saveTimeoutRef.current = setTimeout(() => {
-      saveDrawing(elements, appState);
+      saveDrawing(elements, state);
     }, 3000); // Autosave after 3 seconds of inactivity
-  };
+  });
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTitle(e.target.value);
@@ -174,19 +192,19 @@ const Editor = () => {
               <Button onClick={() => navigate("/dashboard")}>Return to Dashboard</Button>
             </div>
           }>
-            <Excalidraw
-              excalidrawAPI={(api) => {
-                if (excalidrawRef.current !== api && api !== null) {
+            {editorInitialized && (
+              <Excalidraw
+                excalidrawAPI={(api) => {
                   excalidrawRef.current = api;
-                }
-              }}
-              initialData={{
-                elements: excalidrawElements,
-                appState: appState || undefined,
-              }}
-              onChange={handleChange}
-              viewModeEnabled={false}
-            />
+                }}
+                initialData={{
+                  elements: excalidrawElements,
+                  appState: appState || undefined,
+                }}
+                onChange={handleChangeRef.current}
+                viewModeEnabled={false}
+              />
+            )}
           </ErrorBoundary>
         </div>
       )}
@@ -195,3 +213,4 @@ const Editor = () => {
 };
 
 export default Editor;
+

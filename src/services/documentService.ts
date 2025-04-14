@@ -51,15 +51,15 @@ export const documentService = {
   },
 
   async updateDocument(id: string, document: DocumentUpdateInput): Promise<Document> {
-    // Remove preview_image if it exists in the document
-    const { preview_image, ...documentWithoutPreview } = document;
-    
+    // Handle preview_image properly
+    const updatePayload = {
+      ...document,
+      updated_at: new Date().toISOString(),
+    };
+
     const { data, error } = await supabase
       .from("documents")
-      .update({
-        ...documentWithoutPreview,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updatePayload)
       .eq("id", id)
       .select()
       .single();
@@ -84,3 +84,4 @@ export const documentService = {
     }
   }
 };
+

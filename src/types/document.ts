@@ -16,6 +16,7 @@ export type DocumentCreateInput = {
   content: any;
   category?: string;
   category_color?: string;
+  preview_image?: string | null;
 };
 
 export type DocumentUpdateInput = {
@@ -24,5 +25,6 @@ export type DocumentUpdateInput = {
   category?: string;
   category_color?: string;
   updated_at?: string;
-  preview_image?: string | null; // Keeping this for backward compatibility
+  preview_image?: string | null;
 };
+
