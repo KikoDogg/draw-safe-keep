@@ -175,8 +175,6 @@ const Editor = () => {
               appState: appState || undefined,
             }}
             onChange={handleChange}
-            // Explicitly set collaborators to an empty array to fix the error
-            collaborators={[]}
             viewModeEnabled={false}
           />
         </div>
