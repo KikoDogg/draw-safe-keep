@@ -1,3 +1,4 @@
+
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Excalidraw, exportToBlob } from "@excalidraw/excalidraw";
@@ -9,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Save } from "lucide-react";
 import { toast } from "sonner";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 const Editor = () => {
   const { id } = useParams<{ id: string }>();
@@ -168,19 +170,27 @@ const Editor = () => {
         </div>
       ) : (
         <div className="flex-1">
-          <Excalidraw
-            excalidrawAPI={(api) => {
-              if (excalidrawRef.current !== api && api !== null) {
-                excalidrawRef.current = api;
-              }
-            }}
-            initialData={{
-              elements: excalidrawElements,
-              appState: appState || undefined
-            }}
-            onChange={handleChange}
-            viewModeEnabled={false}
-          />
+          <ErrorBoundary fallback={
+            <div className="flex h-full items-center justify-center flex-col gap-4 p-8">
+              <h2 className="text-xl font-bold text-red-600">Failed to load the drawing editor</h2>
+              <p className="text-gray-600">There was a problem initializing the drawing editor component.</p>
+              <Button onClick={() => navigate("/dashboard")}>Return to Dashboard</Button>
+            </div>
+          }>
+            <Excalidraw
+              excalidrawAPI={(api) => {
+                if (excalidrawRef.current !== api && api !== null) {
+                  excalidrawRef.current = api;
+                }
+              }}
+              initialData={{
+                elements: excalidrawElements,
+                appState: appState || undefined,
+              }}
+              onChange={handleChange}
+              viewModeEnabled={false}
+            />
+          </ErrorBoundary>
         </div>
       )}
     </div>
