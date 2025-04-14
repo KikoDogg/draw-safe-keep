@@ -165,13 +165,17 @@ const Editor = () => {
       ) : (
         <div className="flex-1">
           <Excalidraw
-            ref={excalidrawRef}
+            excalidrawAPI={api => {
+              if (excalidrawRef.current !== api && api !== null) {
+                excalidrawRef.current = api;
+              }
+            }}
             initialData={{
               elements: excalidrawElements,
               appState: appState || undefined,
             }}
             onChange={handleChange}
-            // Ensure collaborators is an empty array to prevent the forEach error
+            // Explicitly set collaborators to an empty array to fix the error
             collaborators={[]}
             viewModeEnabled={false}
           />
