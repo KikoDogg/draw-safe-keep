@@ -21,6 +21,9 @@ const Editor = () => {
   const [excalidrawElements, setExcalidrawElements] = useState<readonly ExcalidrawElement[]>([]);
   const [appState, setAppState] = useState<AppState | null>(null);
   
+  // For generating previews
+  const excalidrawRef = useRef<any>(null);
+  
   // Autosave debouncing
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -54,14 +57,43 @@ const Editor = () => {
     fetchDocument();
   }, [id, navigate]);
 
+  const generatePreview = async () => {
+    if (!excalidrawRef.current || !excalidrawElements.length) return null;
+    
+    try {
+      const blob = await exportToBlob({
+        elements: excalidrawElements,
+        appState: {
+          exportWithDarkMode: false,
+          exportBackground: true,
+          viewBackgroundColor: "#ffffff",
+        },
+        files: null,
+      });
+      
+      return await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      console.error("Error generating preview:", error);
+      return null;
+    }
+  };
+
   const saveDrawing = async (elements: readonly ExcalidrawElement[], appState: AppState) => {
     if (!id) return;
     
     setIsSaving(true);
     try {
+      // Generate a preview image
+      const previewImage = await generatePreview();
+      
       await documentService.updateDocument(id, {
         title,
         content: { elements, appState },
+        preview_image: previewImage,
       });
       toast.success("Drawing saved successfully");
     } catch (error) {
@@ -83,7 +115,7 @@ const Editor = () => {
     
     saveTimeoutRef.current = setTimeout(() => {
       saveDrawing(elements, appState);
-    }, 2000); // Autosave after 2 seconds of inactivity
+    }, 3000); // Autosave after 3 seconds of inactivity
   };
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,23 +135,23 @@ const Editor = () => {
 
   return (
     <div className="flex flex-col h-screen">
-      <header className="flex items-center justify-between p-4 border-b">
+      <header className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md">
         <div className="flex items-center gap-4">
-          <Button variant="outline" onClick={() => navigate("/dashboard")}>
+          <Button variant="ghost" onClick={() => navigate("/dashboard")} className="text-white hover:bg-white/20">
             <ArrowLeft size={18} />
-            <span className="sr-only">Back to Dashboard</span>
+            <span className="ml-2">Back</span>
           </Button>
           <Input
             value={title}
             onChange={handleTitleChange}
             onBlur={handleTitleBlur}
-            className="max-w-[300px] font-bold"
+            className="max-w-[300px] font-bold bg-white/10 border-white/20 text-white placeholder-white/60"
           />
         </div>
         <Button
           onClick={() => saveDrawing(excalidrawElements, appState as AppState)}
           disabled={isSaving || isLoading}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20"
         >
           <Save size={18} />
           {isSaving ? "Saving..." : "Save"}
@@ -133,11 +165,15 @@ const Editor = () => {
       ) : (
         <div className="flex-1">
           <Excalidraw
+            ref={excalidrawRef}
             initialData={{
               elements: excalidrawElements,
               appState: appState || undefined,
             }}
             onChange={handleChange}
+            // Ensure collaborators is an empty array to prevent the forEach error
+            collaborators={[]}
+            viewModeEnabled={false}
           />
         </div>
       )}
