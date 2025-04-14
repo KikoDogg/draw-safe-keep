@@ -93,13 +93,10 @@ const Editor = () => {
     
     setIsSaving(true);
     try {
-      // Generate a preview image
-      const previewImage = await generatePreview();
-      
+      // Update without the preview_image field that's causing issues
       await documentService.updateDocument(id, {
         title,
         content: { elements, appState },
-        preview_image: previewImage,
       });
       toast.success("Drawing saved successfully");
     } catch (error) {
@@ -186,6 +183,8 @@ const Editor = () => {
               initialData={{
                 elements: excalidrawElements,
                 appState: appState || undefined,
+                // Add collaborators as an empty array to prevent the error
+                collaborators: [],
               }}
               onChange={handleChange}
               viewModeEnabled={false}

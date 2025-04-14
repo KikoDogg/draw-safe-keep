@@ -8,7 +8,6 @@ export type Document = {
   category: string | null;
   category_color: string | null;
   user_id: string;
-  preview_image?: string | null;
 };
 
 export type DocumentCreateInput = {
@@ -16,7 +15,6 @@ export type DocumentCreateInput = {
   content: any;
   category?: string;
   category_color?: string;
-  preview_image?: string | null;
 };
 
 export type DocumentUpdateInput = {
@@ -25,5 +23,5 @@ export type DocumentUpdateInput = {
   category?: string;
   category_color?: string;
   updated_at?: string;
-  preview_image?: string | null;
+  preview_image?: string | null; // Keeping this for backward compatibility
 };
