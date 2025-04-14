@@ -8,6 +8,7 @@ export type Document = {
   category: string | null;
   category_color: string | null;
   user_id: string;
+  preview_image?: string | null; // Adding this back to fix the Dashboard component
 };
 
 export type DocumentCreateInput = {

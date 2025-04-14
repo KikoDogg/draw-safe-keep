@@ -183,8 +183,6 @@ const Editor = () => {
               initialData={{
                 elements: excalidrawElements,
                 appState: appState || undefined,
-                // Add collaborators as an empty array to prevent the error
-                collaborators: [],
               }}
               onChange={handleChange}
               viewModeEnabled={false}
