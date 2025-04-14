@@ -27,6 +27,11 @@ const Editor = () => {
   // Autosave debouncing
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Add debugging to help identify the exact issue
+  useEffect(() => {
+    console.log("Excalidraw component loaded");
+  }, []);
+
   useEffect(() => {
     const fetchDocument = async () => {
       if (!id) return;
@@ -165,7 +170,7 @@ const Editor = () => {
       ) : (
         <div className="flex-1">
           <Excalidraw
-            excalidrawAPI={api => {
+            excalidrawAPI={(api) => {
               if (excalidrawRef.current !== api && api !== null) {
                 excalidrawRef.current = api;
               }
@@ -173,6 +178,8 @@ const Editor = () => {
             initialData={{
               elements: excalidrawElements,
               appState: appState || undefined,
+              // Initialize collaborators as an empty array to ensure proper type
+              collaborators: [],
             }}
             onChange={handleChange}
             viewModeEnabled={false}
