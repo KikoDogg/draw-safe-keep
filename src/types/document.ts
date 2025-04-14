@@ -8,7 +8,7 @@ export type Document = {
   category: string | null;
   category_color: string | null;
   user_id: string;
-  preview_image?: string | null; // Adding this back to fix the Dashboard component
+  preview_image?: string | null;
 };
 
 export type DocumentCreateInput = {
@@ -27,4 +27,3 @@ export type DocumentUpdateInput = {
   updated_at?: string;
   preview_image?: string | null;
 };
-

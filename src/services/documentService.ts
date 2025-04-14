@@ -51,7 +51,6 @@ export const documentService = {
   },
 
   async updateDocument(id: string, document: DocumentUpdateInput): Promise<Document> {
-    // Handle preview_image properly
     const updatePayload = {
       ...document,
       updated_at: new Date().toISOString(),
@@ -84,4 +83,3 @@ export const documentService = {
     }
   }
 };
-

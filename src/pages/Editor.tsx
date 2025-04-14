@@ -124,7 +124,7 @@ const Editor = () => {
     }
   };
 
-  // Store the onChange handler in a ref to prevent it from causing re-renders
+  // Use a ref for the onChange handler to prevent it from causing re-renders
   const handleChangeRef = useRef((elements: readonly ExcalidrawElement[], state: AppState) => {
     setExcalidrawElements(elements);
     setAppState(state);
@@ -213,4 +213,3 @@ const Editor = () => {
 };
 
 export default Editor;
-
